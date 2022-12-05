@@ -1,0 +1,7 @@
+hapi:
+  fhir:
+    tester:
+      home:
+        server_address: http://localhost:8080/fhir
+server:
+  port: 8080

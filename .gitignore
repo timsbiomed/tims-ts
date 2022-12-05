@@ -1,0 +1,7 @@
+/.venv/
+/logs/
+/postgres/
+/hapi-extensions/**
+!/hapi-extensions/hapi-run
+!/hapi-extensions/hapi-run/application-*
+/.m2/

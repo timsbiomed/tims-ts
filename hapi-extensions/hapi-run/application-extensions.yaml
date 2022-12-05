@@ -1,0 +1,7 @@
+com:
+  essaid:
+    fhir:
+      hapi:
+        extensions:
+          provider-class-names:
+            - com.essaid.fhir.hapi.extensions.provider.HelloHapi
