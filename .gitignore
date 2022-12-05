@@ -5,3 +5,4 @@
 !/hapi-extensions/hapi-run
 !/hapi-extensions/hapi-run/application-*
 /.m2/
+/.idea/
