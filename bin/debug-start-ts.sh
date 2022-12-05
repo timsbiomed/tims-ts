@@ -27,6 +27,7 @@ fi
 . "${SS_VENV}/bin/activate"
 
 setup-servers \
+        py-debug \
         postgres-docker \
               --work-dir  postgres \
               --docker-tag 14-bullseye \
@@ -38,9 +39,10 @@ setup-servers \
               --dbs-work-dir postgres \
               --git-url "git@github.com:ShahimEssaid/hapi-fhir-jpaserver-starter-clone-1.git" \
               --git-ref "image/v6.2.2-extensions" \
-              --mvn-local-repo ../.m2 \
-              --spring-profiles "local,extensions" \
+              --mvn-local-repo .m2 \
+              --spring-profiles "local,extensions,something-else" \
               --action hapi-start \
+              --java-debug \
 
 
 

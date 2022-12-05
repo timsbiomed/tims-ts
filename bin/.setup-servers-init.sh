@@ -27,7 +27,7 @@ if [[ -z $SS_VENV ]]; then
 fi
 
 . "${SS_VENV}/bin/activate"
-pip install -U pip
-pip -q uninstall setup-servers
-pip install setup-servers==0.1.8
+pip -q install -U pip
+pip -q -q uninstall -y setup-servers
+pip -q install setup-servers==0.1.10
 
