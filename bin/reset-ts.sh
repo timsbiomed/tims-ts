@@ -28,7 +28,8 @@ fi
 
 bin/stop-ts.sh
 
-git clean -Xdff
+git clean -xdff -e ".idea" -e ".m2"
+git checkout .
 
 
 
