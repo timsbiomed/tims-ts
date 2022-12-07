@@ -18,7 +18,7 @@ DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 TTS_HOME=$(realpath "${DIR}/..")
 cd "$TTS_HOME"
 if [[ ! -f bin/env.sh ]]; then
-  cp bin/env.sh.example  bin/env.sh
+  cp bin/env.sh.example bin/env.sh
 fi
 . bin/env.sh
 
