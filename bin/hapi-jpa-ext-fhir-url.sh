@@ -22,15 +22,11 @@ if [[ ! -f bin/env.sh ]]; then
 fi
 . bin/env.sh
 
-if [[ -z $TT_VENV || ! -d ${TT_VENV}  ]]; then
-  python3  -m venv "${TT_VENV:-.venv}"
-  echo >> bin/env.sh
-  echo "TT_VENV=${TT_VENV:-.venv}" >> bin/env.sh
+if [[ -z ${TT_VENV:-} || ! -d ${TT_VENV} ]]; then
+  bin/.setup-servers-init.sh
   . bin/env.sh
 fi
 
 . "${TT_VENV}/bin/activate"
-pip -q install -U pip
-pip -q -q uninstall -y setup-servers yq
-pip -q install setup-servers==0.1.11 yq &> /dev/null
 
+yq -r '.fhir_url' "hapi-jpa-ext/actions-state.yaml"

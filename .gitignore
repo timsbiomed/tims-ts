@@ -1,8 +1,9 @@
 /.venv/
 /logs/
 /postgres/
-/hapi-extensions/**
-!/hapi-extensions/hapi-run
-!/hapi-extensions/hapi-run/application-*
+/hapi-jpa-ext/**
+!/hapi-jpa-ext/hapi-run
+!/hapi-jpa-ext/hapi-run/application-*
 /.m2/
 /.idea/
+/bin/env.sh

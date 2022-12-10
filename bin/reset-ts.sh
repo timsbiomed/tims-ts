@@ -15,20 +15,25 @@ while [ -h "$SOURCE" ]; do
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-SS_HOME=$(realpath "${DIR}/..")
-cd "$SS_HOME"
+TT_HOME=$(realpath "${DIR}/..")
+cd "$TT_HOME"
+if [[ ! -f bin/env.sh ]]; then
+  cp bin/env.sh.example  bin/env.sh
+fi
 . bin/env.sh
 
-if [[ -z ${SS_VENV:-} ]]; then
+if [[ -z ${TT_VENV:-} || ! -d ${TT_VENV} ]]; then
   bin/.setup-servers-init.sh
   . bin/env.sh
 fi
 
-. "${SS_VENV}/bin/activate"
+. "${TT_VENV}/bin/activate"
 
 bin/stop-ts.sh
 
-git clean -xdff -e ".idea" -e ".m2"
+# This will delete anything that is not already in the git index (no need to be committed as well)
+# Add anything you do not want to be lost to the git index first.
+git clean -xdff -e ".idea" -e ".m2" -e "bin/env.sh"
 git checkout .
 
 

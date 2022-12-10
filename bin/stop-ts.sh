@@ -15,20 +15,23 @@ while [ -h "$SOURCE" ]; do
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-SS_HOME=$(realpath "${DIR}/..")
-cd "$SS_HOME"
+TT_HOME=$(realpath "${DIR}/..")
+cd "$TT_HOME"
+if [[ ! -f bin/env.sh ]]; then
+  cp bin/env.sh.example  bin/env.sh
+fi
 . bin/env.sh
 
-if [[ -z ${SS_VENV:-} ]]; then
+if [[ -z ${TT_VENV:-} || ! -d ${TT_VENV} ]]; then
   bin/.setup-servers-init.sh
   . bin/env.sh
 fi
 
-. "${SS_VENV}/bin/activate"
+. "${TT_VENV}/bin/activate"
 
 setup-servers \
         hapi-jpa-starter \
-              --work-dir hapi-extensions \
+              --work-dir hapi-jpa-ext \
               --action hapi-stop \
         postgres-docker \
               --work-dir  postgres \
