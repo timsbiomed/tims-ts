@@ -17,3 +17,6 @@
 !/loaders/README.md
 !/loaders/.gitignore
 /hapi-jpa-ext/hapi-run/application-local.yaml
+
+# OAK
+.template.db
