@@ -15,22 +15,22 @@ while [ -h "$SOURCE" ]; do
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-TT_HOME=$(realpath "${DIR}/..")
-cd "$TT_HOME"
+TTS_HOME=$(realpath "${DIR}/..")
+cd "$TTS_HOME"
 if [[ ! -f bin/env.sh ]]; then
   cp bin/env.sh.example  bin/env.sh
 fi
 . bin/env.sh
 
-if [[ -z $TT_VENV || ! -d ${TT_VENV}  ]]; then
-  python3  -m venv "${TT_VENV:-.venv}"
+if [[ -z ${TTS_VENV:-} || ! -d ${TTS_VENV}  ]]; then
+  python3  -m venv "${TTS_VENV:-.venv}"
   echo >> bin/env.sh
-  echo "TT_VENV=${TT_VENV:-.venv}" >> bin/env.sh
+  echo "TTS_VENV=${TTS_VENV:-.venv}" >> bin/env.sh
   . bin/env.sh
 fi
 
-. "${TT_VENV}/bin/activate"
+. "${TTS_VENV}/bin/activate"
 pip -q install -U pip
 pip -q -q uninstall -y setup-servers yq
-pip -q install setup-servers==0.1.12 yq &> /dev/null
+pip -q install setup-servers==0.1.13 yq &> /dev/null
 

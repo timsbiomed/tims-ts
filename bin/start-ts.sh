@@ -15,19 +15,19 @@ while [ -h "$SOURCE" ]; do
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-TT_HOME=$(realpath "${DIR}/..")
-cd "$TT_HOME"
+TTS_HOME=$(realpath "${DIR}/..")
+cd "$TTS_HOME"
 if [[ ! -f bin/env.sh ]]; then
   cp bin/env.sh.example  bin/env.sh
 fi
 . bin/env.sh
 
-if [[ -z ${TT_VENV:-} || ! -d ${TT_VENV} ]]; then
+if [[ -z ${TTS_VENV:-} || ! -d ${TTS_VENV} ]]; then
   bin/.setup-servers-init.sh
   . bin/env.sh
 fi
 
-. "${TT_VENV}/bin/activate"
+. "${TTS_VENV}/bin/activate"
 
 setup-servers \
         postgres-docker \
@@ -44,7 +44,8 @@ setup-servers \
               --mvn-local-repo ../.m2 \
               --spring-profiles "local,ext" \
               --action hapi-start \
-              --hapi-port "${TT_HAPI_PORT}"
+              --hapi-port "${TTS_HAPI_PORT}" \
+              --fhir-address "${TTS_FHIR_ADDRESS}"
 
 
 
