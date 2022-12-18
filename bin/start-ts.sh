@@ -33,17 +33,18 @@ setup-servers \
         postgres-docker \
               --work-dir  postgres \
               --docker-tag 14-bullseye \
-              --dbs-host localhost \
+              --dbs-host 0.0.0.0 \
               --dbs-port 5432 \
               --action dbs-start \
         hapi-jpa-starter \
               --work-dir hapi-jpa-ext \
               --dbs-work-dir postgres \
-              --git-url "git@github.com:ShahimEssaid/hapi-fhir-jpaserver-starter-clone-1.git" \
+              --git-url "https://github.com/ShahimEssaid/hapi-fhir-jpaserver-starter-clone-1.git" \
               --git-ref "image/v6.2.2-extensions" \
               --mvn-local-repo ../.m2 \
               --spring-profiles "local,ext" \
               --action hapi-start \
+              --hapi-port "${TT_HAPI_PORT}"
 
 
 

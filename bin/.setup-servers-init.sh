@@ -32,5 +32,5 @@ fi
 . "${TT_VENV}/bin/activate"
 pip -q install -U pip
 pip -q -q uninstall -y setup-servers yq
-pip -q install setup-servers==0.1.11 yq &> /dev/null
+pip -q install setup-servers==0.1.12 yq &> /dev/null
 
