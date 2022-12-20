@@ -1,9 +1,8 @@
 """Convert OWL to FHIR"""
-import json
 import os
 import subprocess
 from argparse import ArgumentParser
-from typing import Dict
+from typing import Dict, Set
 
 import curies
 import requests
@@ -107,21 +106,7 @@ def owl_to_obograph(inpath: str, use_cache=False) -> str:
     # from bioontologies import robot
     # parse_results: robot.ParseResults = robot.convert_to_obograph_local(inpath)
     # graph = parse_results.graph_document.graphs[0]
-
     _run_shell_command(command)
-
-    # Patch issue: which would cause unhandled exception in OAK: https://github.com/linkml/linkml/issues/1156
-    with open(outpath, 'r') as file:
-        obograph: Dict = json.load(file)
-    for i in range(len(obograph['graphs'])):
-        logical_def_axioms = obograph['graphs'][i]['logicalDefinitionAxioms']
-        patched_axioms = [{
-            **{'restrictions': [x for x in axiom['restrictions'] if x]},
-            **{k: v for k, v in axiom.items() if k != 'restrictions'}
-        } for axiom in logical_def_axioms]
-        obograph['graphs'][i]['logicalDefinitionAxioms'] = patched_axioms
-    with open(outpath, 'w') as file:
-        json.dump(obograph, file)
 
     return outpath
 
