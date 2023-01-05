@@ -2,7 +2,7 @@
 import os
 import subprocess
 from argparse import ArgumentParser
-from typing import Dict, Set
+from typing import Dict
 
 import curies
 import requests
@@ -30,19 +30,6 @@ FAVORITE_ONTOLOGY_URLS = {
 
 
 # Functions
-def download(url: str, path: str, download_if_cached=True):
-    """Download file at url to local path
-
-    :param download_if_cached: If True and file at `path` already exists, download anyway."""
-    _dir = os.path.dirname(path)
-    if not os.path.exists(_dir):
-        os.makedirs(_dir)
-    if download_if_cached or not os.path.exists(path):
-        with open(path, 'wb') as f:
-            response = requests.get(url, verify=False)
-            f.write(response.content)
-
-
 def _run_shell_command(command: str, cwd_outdir: str = None) -> subprocess.CompletedProcess:
     """Runs a command in the shell, and handles some common errors"""
     args = command.split(' ')
@@ -60,6 +47,36 @@ def _run_shell_command(command: str, cwd_outdir: str = None) -> subprocess.Compl
     elif stdout and ".db' is up to date" in stdout:
         raise FileExistsError(stdout)
     return result
+
+
+def _preprocess_rxnorm(path: str) -> str:
+    """Preprocess RXNORM
+    If detects a Bioportal rxnorm TTL, makes some modifications to standardize it to work with OAK, etc.
+    See: https://github.com/INCATools/ontology-access-kit/issues/427
+    If using --use-cached-intermediaries or --retain-intermediaries, those are used for SemSQL or Obographs
+    intermediaries, but not the intermediary created by this function.
+    """
+    if '-fixed' in path:
+        return path
+    print('INFO: RXNORM.ttl from Bioportal detected. Doing some preprocessing.')
+    outpath = path.replace(".ttl", "-fixed.ttl")
+    _run_shell_command(f'cp {path} {outpath}')
+    command_str = f'perl -i {os.path.join(BIN_DIR, "convert_owl_ncbo2owl.pl")} {outpath}'
+    _run_shell_command(command_str)
+    return outpath
+
+
+def download(url: str, path: str, download_if_cached=True):
+    """Download file at url to local path
+
+    :param download_if_cached: If True and file at `path` already exists, download anyway."""
+    _dir = os.path.dirname(path)
+    if not os.path.exists(_dir):
+        os.makedirs(_dir)
+    if download_if_cached or not os.path.exists(path):
+        with open(path, 'wb') as f:
+            response = requests.get(url, verify=False)
+            f.write(response.content)
 
 
 def owl_to_semsql(inpath: str, use_cache=False) -> str:
@@ -160,6 +177,10 @@ def owl_to_fhir(
     if url:
         input_path = os.path.join(CACHE_DIR, out_filename.replace('.json', '.owl'))
         download(url, input_path)
+
+    # Preprocessing: Special cases
+    if 'rxnorm' in input_path.lower() or 'rxnorm' in out_filename.lower():
+        input_path = _preprocess_rxnorm(input_path)
 
     # Convert
     if intermediary_type == 'obographs' or input_path.endswith('.ttl'):  # semsql only supports .owl
