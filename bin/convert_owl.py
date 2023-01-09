@@ -26,6 +26,8 @@ FAVORITE_ONTOLOGY_URLS = {
     'hpo': 'https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/hp-full.owl',
     'rxnorm': 'https://data.bioontology.org/'
               'ontologies/RXNORM/submissions/23/download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb',
+    'so': 'https://data.bioontology.org/'
+          'ontologies/SO/submissions/304/download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb'
 }
 
 
