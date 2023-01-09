@@ -18,7 +18,7 @@ DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 TTS_HOME=$(realpath "${DIR}/..")
 cd "$TTS_HOME"
 if [[ ! -f bin/env.sh ]]; then
-  cp bin/env.sh.example  bin/env.sh
+  cp bin/env.sh.example bin/env.sh
 fi
 . bin/env.sh
 
@@ -29,13 +29,8 @@ fi
 
 . "${TTS_VENV}/bin/activate"
 
-bin/stop-ts.sh
-
-# This will delete anything that is not already in the git index (no need to be committed as well)
-# Add anything you do not want to be lost to the git index first.
-git clean -xdff -e ".idea" -e ".m2" -e "bin/env.sh" -e "loaders" -e "hapi-cli"
-git checkout .
-
-
-
+for f in $(find "$(cd "${TTS_HOME}"/loaders; pwd)" -type f \( -name "*loading.txt" -o -name "*loaded.txt" \) | sort); do
+	echo Deleting: "$f"
+	rm "$f"
+done
 

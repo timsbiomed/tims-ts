@@ -1,0 +1,1 @@
+This is the [R4 example FHIR JSON CodeSystem](http://hl7.org/fhir/codesystem-example.html) loaded with the FHIR JSON loader.sh script.

@@ -29,13 +29,15 @@ fi
 
 . "${TTS_VENV}/bin/activate"
 
-bin/stop-ts.sh
 
-# This will delete anything that is not already in the git index (no need to be committed as well)
-# Add anything you do not want to be lost to the git index first.
-git clean -xdff -e ".idea" -e ".m2" -e "bin/env.sh" -e "loaders" -e "hapi-cli"
-git checkout .
+if [[ ! -f hapi-cli/hapi-cli-v${HAPI_VERSION}.zip ]]; then
+  mkdir -p "hapi-cli"
+  wget --quiet \
+    --output-document "hapi-cli/hapi-cli-v${HAPI_VERSION}.zip" \
+    "https://github.com/hapifhir/hapi-fhir/releases/download/v${HAPI_VERSION}/hapi-fhir-${HAPI_VERSION}-cli.zip"
+fi
 
-
-
-
+if [[ ! -f hapi-cli/v${HAPI_VERSION}/hapi-fhir-cli.jar ]]; then
+  mkdir -p "hapi-cli/v${HAPI_VERSION}"
+  unzip "hapi-cli/hapi-cli-v${HAPI_VERSION}.zip" -d "hapi-cli/v${HAPI_VERSION}"
+fi

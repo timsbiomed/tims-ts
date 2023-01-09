@@ -1,0 +1,23 @@
+[Unit]
+Description=tims-ts
+Requires=docker.service
+After=docker.service
+
+[Service]
+
+# https://stackoverflow.com/questions/37585758/how-to-redirect-output-of-systemd-service-to-a-file
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=tims-ts
+
+WorkingDirectory=/opt/tims-ts-new
+TimeoutSec=120
+UMask=002
+
+ExecStart=/opt/tims-ts-new/bin/start-ts.sh
+
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

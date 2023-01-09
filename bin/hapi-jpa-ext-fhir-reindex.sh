@@ -29,13 +29,11 @@ fi
 
 . "${TTS_VENV}/bin/activate"
 
-bin/stop-ts.sh
+bin/hapi-cli-install.sh
+export HAPI_CLI="${TTS_HOME}/hapi-cli/v${HAPI_VERSION}/hapi-fhir-cli"
+FHIR_API_BASE="$(bin/hapi-jpa-ext-fhir-url.sh)"
+export FHIR_API_BASE
 
-# This will delete anything that is not already in the git index (no need to be committed as well)
-# Add anything you do not want to be lost to the git index first.
-git clean -xdff -e ".idea" -e ".m2" -e "bin/env.sh" -e "loaders" -e "hapi-cli"
-git checkout .
-
-
-
-
+${HAPI_CLI}  reindex-terminology \
+--target "$FHIR_API_BASE"  \
+--fhir-version r4
