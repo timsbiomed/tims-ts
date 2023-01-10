@@ -1,4 +1,5 @@
 """Convert OWL to FHIR"""
+import json
 import os
 import subprocess
 from argparse import ArgumentParser
@@ -127,6 +128,33 @@ def owl_to_obograph(inpath: str, use_cache=False) -> str:
     # graph = parse_results.graph_document.graphs[0]
     _run_shell_command(command)
 
+    # Patch missing roots / etc issue
+    # - This appears to be mostly a problem in FHIR (and maybe just Obographs) if subClassOf or variation missing, but
+    #   not 100% sure
+    # - Until this fixed, at least: https://github.com/ontodev/robot/issues/1082
+    missing_nodes_from_important_edge_preds = [
+        'is_a',
+        'http://purl.bioontology.org/ontology/RXNORM/isa',
+        'rdfs:subClassOf',
+        'http://www.w3.org/2000/01/rdf-schema#subClassOf'
+    ]
+    with open(outpath, 'r') as f:
+        data = json.load(f)
+    nodes = data['graphs'][0]['nodes']
+    node_ids = set([node['id'] for node in nodes])
+    edges = data['graphs'][0]['edges']
+    edges = [x for x in edges if x['pred'] in missing_nodes_from_important_edge_preds]
+    edge_subs = set([edge['sub'] for edge in edges])
+    edge_objs = set([edge['obj'] for edge in edges])
+    edge_ids = edge_subs.union(edge_objs)
+    missing = set([x for x in edge_ids if x not in node_ids])
+    if missing:
+        print(f'INFO: The following nodes were found in Obographs edges, but not nodes. Adding missing declarations: '
+              f'{missing}')
+        for node_id in missing:
+            nodes.append({'id': node_id})
+        with open(outpath, 'w') as f:
+            json.dump(data, f)
     return outpath
 
 
