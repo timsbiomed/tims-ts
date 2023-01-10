@@ -2,7 +2,7 @@
 #
 # download and place a SNOMED-CD release file in this folder, and name it SNOMEDCT.zip
 
-set -x
+#set -x
 set -e
 set -u
 set -o pipefail

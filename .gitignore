@@ -7,10 +7,7 @@
 /.m2/
 /.idea/
 /bin/env.sh
-/hapi-cli/v6.2.2/hapi-fhir-cli
-/hapi-cli/v6.2.2/hapi-fhir-cli.cmd
-/hapi-cli/v6.2.2/hapi-fhir-cli.jar
-/hapi-cli/hapi-cli-v6.2.2.zip
+/hapi-cli/*
 /loaders/*
 !/loaders/0*
 !/loaders/README.md

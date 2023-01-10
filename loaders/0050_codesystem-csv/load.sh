@@ -15,7 +15,8 @@ while [ -h "$SOURCE" ]; do
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-cd ${DIR}
+
+cd "${DIR}"
 
 for f in $(find "$(
   cd "${DIR}"

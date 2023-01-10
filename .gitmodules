@@ -1,0 +1,4 @@
+[submodule "timsui"]
+	path = timsui
+	url = https://github.com/HOT-Ecosystem/TimsUI.git
+	branch = master
