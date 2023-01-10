@@ -47,8 +47,4 @@ setup-servers \
               --hapi-port "${TTS_HAPI_PORT}" \
               --fhir-address "${TTS_FHIR_ADDRESS}"
 
-#bin/loaders.sh
-
-
-
-
+bin/loaders-load.sh

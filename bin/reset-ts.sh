@@ -31,10 +31,14 @@ fi
 
 bin/stop-ts.sh
 
+deactivate
+
 # This will delete anything that is not already in the git index (no need to be committed as well)
 # Add anything you do not want to be lost to the git index first.
-git clean -xdff -e ".idea" -e ".m2" -e "bin/env.sh" -e "loaders" -e "hapi-cli"
+git clean -xdff -e ".venv"  -e ".idea" -e ".m2" -e "bin/env.sh" -e "loaders/*.zip" -e "hapi-cli"
 git checkout .
+
+bin/loaders-reset.sh
 
 
 

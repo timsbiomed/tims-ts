@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-#
-# load.sh for loinc
-# looks for file in the ontology cache, named Loinc_2.72.zip explicitly
 
 #set -x
 set -e

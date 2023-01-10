@@ -17,17 +17,17 @@ done
 DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 TTS_HOME=$(realpath "${DIR}/..")
 cd "$TTS_HOME"
-if [[ ! -f bin/env.sh ]]; then
-  cp bin/env.sh.example bin/env.sh
-fi
-. bin/env.sh
-
-if [[ -z ${TTS_VENV:-} || ! -d ${TTS_VENV} ]]; then
-  bin/.setup-servers-init.sh
-  . bin/env.sh
-fi
-
-. "${TTS_VENV}/bin/activate"
+#if [[ ! -f bin/env.sh ]]; then
+#  cp bin/env.sh.example bin/env.sh
+#fi
+#. bin/env.sh
+#
+#if [[ -z ${TTS_VENV:-} || ! -d ${TTS_VENV} ]]; then
+#  bin/.setup-servers-init.sh
+#  . bin/env.sh
+#fi
+#
+#. "${TTS_VENV}/bin/activate"
 
 for f in $(find "$(cd "${TTS_HOME}"/loaders; pwd)" -type f \( -name "*loading.txt" -o -name "*loaded.txt" \) | sort); do
 	echo Deleting: "$f"
