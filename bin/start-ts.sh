@@ -40,9 +40,9 @@ setup-servers \
               --work-dir hapi-jpa-ext \
               --dbs-work-dir postgres \
               --git-url "https://github.com/ShahimEssaid/hapi-fhir-jpaserver-starter-clone-1.git" \
-              --git-ref "image/v6.2.2-extensions" \
+              --git-ref "6219241a04def38c949e0613489a0208ebe8cafe" \
               --mvn-local-repo ../.m2 \
-              --spring-profiles "local,ext" \
+              --spring-profiles "local,ext,igs" \
               --action hapi-start \
               --hapi-port "${TTS_HAPI_PORT}" \
               --fhir-address "${TTS_FHIR_ADDRESS}"
