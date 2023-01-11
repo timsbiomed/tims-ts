@@ -122,39 +122,88 @@ def owl_to_obograph(inpath: str, use_cache=False) -> str:
         os.makedirs(outdir)
     if use_cache and os.path.exists(outpath):
         return outpath
-    # todo: Switch back to `bioontologies` when complete: https://github.com/biopragmatics/bioontologies/issues/9
+    # todo: Switch back to `bioontologies` when complete: https://github.com/bioprag    matics/bioontologies/issues/9
     # from bioontologies import robot
     # parse_results: robot.ParseResults = robot.convert_to_obograph_local(inpath)
     # graph = parse_results.graph_document.graphs[0]
     _run_shell_command(command)
 
-    # Patch missing roots / etc issue
-    # - This appears to be mostly a problem in FHIR (and maybe just Obographs) if subClassOf or variation missing, but
-    #   not 100% sure
-    # - Until this fixed, at least: https://github.com/ontodev/robot/issues/1082
-    missing_nodes_from_important_edge_preds = [
-        'is_a',
-        'http://purl.bioontology.org/ontology/RXNORM/isa',
-        'rdfs:subClassOf',
-        'http://www.w3.org/2000/01/rdf-schema#subClassOf'
-    ]
+    # Patch missing OAK edge props (until resolved: https://github.com/INCATools/ontology-access-kit/issues/428)
     with open(outpath, 'r') as f:
         data = json.load(f)
-    nodes = data['graphs'][0]['nodes']
-    node_ids = set([node['id'] for node in nodes])
-    edges = data['graphs'][0]['edges']
-    edges = [x for x in edges if x['pred'] in missing_nodes_from_important_edge_preds]
-    edge_subs = set([edge['sub'] for edge in edges])
-    edge_objs = set([edge['obj'] for edge in edges])
-    edge_ids = edge_subs.union(edge_objs)
-    missing = set([x for x in edge_ids if x not in node_ids])
-    if missing:
-        print(f'INFO: The following nodes were found in Obographs edges, but not nodes. Adding missing declarations: '
-              f'{missing}')
-        for node_id in missing:
-            nodes.append({'id': node_id})
-        with open(outpath, 'w') as f:
-            json.dump(data, f)
+    new_edges = [{k: x[k] for k in ['sub', 'pred', 'obj']} for x in data['graphs'][0]['edges']]
+    data['graphs'][0]['edges'] = new_edges
+    new_domain_range_axioms = []
+    for axiom in data['graphs'][0]['domainRangeAxioms']:
+        new_axiom = axiom
+        if 'allValuesFromEdges' in axiom:
+            new_edges = [{k: x[k] for k in ['sub', 'pred', 'obj']} for x in axiom['allValuesFromEdges']]
+            new_axiom['allValuesFromEdges'] = new_edges
+        new_domain_range_axioms.append(new_axiom)
+    data['graphs'][0]['domainRangeAxioms'] = new_domain_range_axioms
+    with open(outpath, 'w') as f:
+        json.dump(data, f, indent=2)
+
+    # Patch missing roots / etc issue (until resolved: https://github.com/ontodev/robot/issues/1082)
+    # ! - Deactivated this because I was getting an error about the very same IDs that Chris R was asking for
+    #     Try uploading and see if it works.
+    #
+    # - This appears to be mostly a problem in FHIR (and maybe just Obographs) if subClassOf or variation missing, but
+    #   not 100% sure
+    #
+    # missing_nodes_from_important_edge_preds = [
+    #     'is_a',
+    #     'http://purl.bioontology.org/ontology/RXNORM/isa',
+    #     'rdfs:subClassOf',
+    #     'http://www.w3.org/2000/01/rdf-schema#subClassOf'
+    # ]
+    # with open(outpath, 'r') as f:
+    #     data = json.load(f)
+    # nodes = data['graphs'][0]['nodes']
+    # node_ids = set([node['id'] for node in nodes])
+    # edges = data['graphs'][0]['edges']
+    # edges = [x for x in edges if x['pred'] in missing_nodes_from_important_edge_preds]
+    # edge_subs = set([edge['sub'] for edge in edges])
+    # edge_objs = set([edge['obj'] for edge in edges])
+    # edge_ids = edge_subs.union(edge_objs)
+    # missing = set([x for x in edge_ids if x not in node_ids])
+
+    # Edge case exclusions
+    # - This was causing the following error in OAK (I have not made a GH issue):
+    # - This example was from Mondo
+    # cooked_entry = Node(id="JsonObj(id='http://www.geneontology.org/formats/oboInOwl#Subset')", ...
+    #         if cooked_entry[key_name] != key:
+    # >           raise ...
+    # E           ValueError: Slot: nodes - attribute id value (JsonObj(
+    # id='http://www.geneontology.org/formats/oboInOwl#Subset'))
+    # does not match key (http://www.geneontology.org/formats/oboInOwl#Subset)
+    #
+    # Method A: Remove cases
+    # id_exclusions = [
+    #     'http://www.geneontology.org/formats/oboInOwl#Subset'
+    # ]
+    # uri_stem_exclusions = [
+    #     'http://purl.obolibrary.org/obo/CARO_'
+    # ]
+    # for case in id_exclusions:
+    #     if case in missing:
+    #         missing.remove(case)
+    # missing2 = []
+    # for node_id in missing:
+    #     if not any([node_id.startswith(x) for x in uri_stem_exclusions]):
+    #         missing2.append(node_id)
+    #
+    # Method B: Keep only dominant IDs
+    # - Opted not to do
+
+    # if missing2:
+    #     print(f'INFO: The following nodes were found in Obographs edges, but not nodes. Adding missing declarations: '
+    #           f'{missing}')
+    #     for node_id in missing:
+    #         nodes.append({'id': node_id})
+    #     with open(outpath, 'w') as f:
+    #         json.dump(data, f)
+
     return outpath
 
 
