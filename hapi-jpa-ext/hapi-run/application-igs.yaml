@@ -2,10 +2,10 @@ hapi:
   fhir:
     implementationguides:
       genomics:
-        name: "Genomics Reporting"
+        name: "hl7.fhir.uv.genomics-reporting"
         version: "2.0.0"
         url: "http://hl7.org/fhir/uv/genomics-reporting/package.tgz"
       rwd:
-        name: "Retrieval of Real World Data for Clinical Research"
+        name: "hl7.fhir.uv.vulcan-rwd"
         version: "1.0.0-ballot"
         url: "http://hl7.org/fhir/uv/vulcan-rwd/2023Jan/package.tgz"
