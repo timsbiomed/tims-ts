@@ -1,3 +1,8 @@
+hapi:
+  fhir:
+    validation:
+      requests_enabled: false
+      responses_enabled: false
 com:
   essaid:
     fhir:
