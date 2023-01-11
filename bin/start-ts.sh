@@ -29,6 +29,14 @@ fi
 
 . "${TTS_VENV}/bin/activate"
 
+if [[ ! -f hapi-jpa-ext/hapi-run/application-local.yaml  ]]; then
+  # need some yaml content or yq won't work.
+  echo "{}" > hapi-jpa-ext/hapi-run/application-local.yaml
+fi
+
+yq -yi ".tims.uiLocation = \"file:${TTS_HOME}/timsui/\"" hapi-jpa-ext/hapi-run/application-local.yaml
+yq -yi ".hapi.fhir.staticLocation = \"file:${TTS_HOME}/static/\"" hapi-jpa-ext/hapi-run/application-local.yaml
+
 setup-servers \
         postgres-docker \
               --work-dir  postgres \
@@ -42,7 +50,7 @@ setup-servers \
               --git-url "https://github.com/ShahimEssaid/hapi-fhir-jpaserver-starter-clone-1.git" \
               --git-ref "6219241a04def38c949e0613489a0208ebe8cafe" \
               --mvn-local-repo ../.m2 \
-              --spring-profiles "local,ext,igs" \
+              --spring-profiles "ext,igs,local" \
               --action hapi-start \
               --hapi-port "${TTS_HAPI_PORT}" \
               --fhir-address "${TTS_FHIR_ADDRESS}"

@@ -1,9 +1,0 @@
-hapi:
-  fhir:
-    server_address: http://localhost:8980/fhir
-    tester:
-      home:
-        server_address: http://localhost:8980/fhir
-server:
-  address: 0.0.0.0
-  port: 8980
