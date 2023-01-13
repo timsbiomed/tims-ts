@@ -39,6 +39,7 @@ git clean -xdff \
   -e ".venv" \
   -e ".idea" \
   -e ".m2" \
+  -e "tmp" \
   -e "bin/env.sh" \
   -e "loaders/*.zip" \
   -e "hapi-cli" \
