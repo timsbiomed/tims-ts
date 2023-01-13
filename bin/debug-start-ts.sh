@@ -55,6 +55,6 @@ setup-servers \
               --hapi-port "${TTS_HAPI_PORT}" \
               --fhir-address "${TTS_FHIR_ADDRESS}" \
               --java-debug \
-              --java-debug-suspend
+#              --java-debug-suspend
 
 bin/loaders-load.sh
