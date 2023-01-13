@@ -82,3 +82,5 @@ for d in $(find "$(
     fi
   fi
 done
+
+echo "=================== FINISHED LOADERS ========================="

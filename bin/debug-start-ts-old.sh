@@ -29,32 +29,26 @@ fi
 
 . "${TTS_VENV}/bin/activate"
 
-if [[ ! -f hapi-jpa-ext/hapi-run/application-local.yaml  ]]; then
-  # need some yaml content or yq won't work.
-  echo "{}" > hapi-jpa-ext/hapi-run/application-local.yaml
-fi
-
-yq -yi ".tims.uiLocation = \"file:${TTS_HOME}/timsui/\"" hapi-jpa-ext/hapi-run/application-local.yaml
-yq -yi ".hapi.fhir.staticLocation = \"file:${TTS_HOME}/static/\"" hapi-jpa-ext/hapi-run/application-local.yaml
-
 setup-servers \
+        py-debug \
         postgres-docker \
               --work-dir  postgres \
               --docker-tag 14-bullseye \
-              --dbs-host 0.0.0.0 \
+              --dbs-host localhost \
               --dbs-port 5432 \
               --action dbs-start \
         hapi-jpa-starter \
-              --work-dir hapi-jpa-ext \
+              --work-dir hapi-extensions \
               --dbs-work-dir postgres \
-              --git-url "https://github.com/ShahimEssaid/hapi-fhir-jpaserver-starter-clone-1.git" \
-              --git-ref "6219241a04def38c949e0613489a0208ebe8cafe" \
-              --mvn-local-repo ../.m2 \
-              --spring-profiles "${TTS_PROFILES}" \
+              --git-url "git@github.com:ShahimEssaid/hapi-fhir-jpaserver-starter-clone-1.git" \
+              --git-ref "image/v6.2.2-extensions" \
+              --mvn-local-repo .m2 \
+              --spring-profiles "local,extensions,something-else" \
               --action hapi-start \
-              --hapi-port "${TTS_HAPI_PORT}" \
-              --fhir-address "${TTS_FHIR_ADDRESS}" \
               --java-debug \
               --java-debug-suspend
 
-bin/loaders-load.sh
+
+
+
+

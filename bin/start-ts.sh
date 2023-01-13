@@ -50,7 +50,7 @@ setup-servers \
               --git-url "https://github.com/ShahimEssaid/hapi-fhir-jpaserver-starter-clone-1.git" \
               --git-ref "6219241a04def38c949e0613489a0208ebe8cafe" \
               --mvn-local-repo ../.m2 \
-              --spring-profiles "ext,igs,local" \
+              --spring-profiles "${TTS_PROFILES}" \
               --action hapi-start \
               --hapi-port "${TTS_HAPI_PORT}" \
               --fhir-address "${TTS_FHIR_ADDRESS}"
