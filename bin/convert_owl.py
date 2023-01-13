@@ -15,20 +15,55 @@ from urllib.parse import urlparse
 
 
 # Vars
+# - Vars: Static
 BIN_DIR = os.path.dirname(os.path.realpath(__file__))
 PROJECT_DIR = os.path.join(BIN_DIR, '..')
 CACHE_DIR = os.path.join(PROJECT_DIR, 'cache')
 OUTDIR = os.path.join(PROJECT_DIR, 'output')
 ROBOT_PATH = os.path.join(BIN_DIR, 'robot')
 INTERMEDIARY_TYPES = ['obographs', 'semsql']
-FAVORITE_ONTOLOGY_URLS = {
-    'mondo': 'https://github.com/monarch-initiative/mondo/releases/latest/download/mondo.owl',
-    'comploinc': 'https://github.com/loinc/comp-loinc/releases/latest/download/merged_reasoned_loinc.owl',
-    'hpo': 'https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/hp-full.owl',
-    'rxnorm': 'https://data.bioontology.org/'
-              'ontologies/RXNORM/submissions/23/download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb',
-    'so': 'https://data.bioontology.org/'
-          'ontologies/SO/submissions/304/download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb'
+
+# - Vars: Config
+# TODO: owl-on-fhir-content needs some configuration / setup instructions, or a git submodule
+OWL_ON_FHIR_CONTENT_REPO_PATH = os.path.join(PROJECT_DIR, '..', 'owl-on-fhir-content')
+# todo: consider 1+ changes: (i) external config JSON / env vars, (ii) accept overrides from CLI
+FAVORITE_DEFAULTS = {
+    'out_dir': os.path.join(OWL_ON_FHIR_CONTENT_REPO_PATH, 'output'),
+    'intermediary_outdir': os.path.join(OWL_ON_FHIR_CONTENT_REPO_PATH, 'input'),
+    'include_all_predicates': True,
+    'intermediary_type': 'obographs',
+    'use_cached_intermediaries': True,
+    'retain_intermediaries': True,
+    'convert_intermediaries_only': True,
+}
+FAVORITE_ONTOLOGIES = {
+    'mondo': {
+        'url': 'https://github.com/monarch-initiative/mondo/releases/latest/download/mondo.owl',
+        'input_path': os.path.join(OWL_ON_FHIR_CONTENT_REPO_PATH, 'input', 'mondo.owl'),
+        'id': 'mondo',
+    },
+    'comp-loinc': {
+        'url': 'https://github.com/loinc/comp-loinc/releases/latest/download/merged_reasoned_loinc.owl',
+        'input_path': os.path.join(OWL_ON_FHIR_CONTENT_REPO_PATH, 'input', 'comploinc.owl'),
+        'id': 'comp-loinc',
+    },
+    'HPO': {
+        'url': 'https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/hp-full.owl',
+        'input_path': os.path.join(OWL_ON_FHIR_CONTENT_REPO_PATH, 'input', 'hpo.owl'),
+        'id': 'HPO',
+    },
+    'rxnorm': {
+        'url': 'https://data.bioontology.org/'
+               'ontologies/RXNORM/submissions/23/download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb',
+        'input_path': os.path.join(OWL_ON_FHIR_CONTENT_REPO_PATH, 'input', 'RXNORM.ttl'),
+        'id': 'rxnorm',
+    },
+    'sequence-ontology': {
+        'url': 'https://data.bioontology.org/'
+               'ontologies/SO/submissions/304/download?apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb',
+        'input_path': os.path.join(OWL_ON_FHIR_CONTENT_REPO_PATH, 'input', 'so.owl'),
+        'id': 'sequence-ontology',
+    },
 }
 
 
@@ -128,22 +163,8 @@ def owl_to_obograph(inpath: str, use_cache=False) -> str:
     # graph = parse_results.graph_document.graphs[0]
     _run_shell_command(command)
 
-    # Patch missing OAK edge props (until resolved: https://github.com/INCATools/ontology-access-kit/issues/428)
-    with open(outpath, 'r') as f:
-        data = json.load(f)
-    new_edges = [{k: x[k] for k in ['sub', 'pred', 'obj']} for x in data['graphs'][0]['edges']]
-    data['graphs'][0]['edges'] = new_edges
-    new_domain_range_axioms = []
-    for axiom in data['graphs'][0]['domainRangeAxioms']:
-        new_axiom = axiom
-        if 'allValuesFromEdges' in axiom:
-            new_edges = [{k: x[k] for k in ['sub', 'pred', 'obj']} for x in axiom['allValuesFromEdges']]
-            new_axiom['allValuesFromEdges'] = new_edges
-        new_domain_range_axioms.append(new_axiom)
-    data['graphs'][0]['domainRangeAxioms'] = new_domain_range_axioms
-    with open(outpath, 'w') as f:
-        json.dump(data, f, indent=2)
-
+    # todo: might want to add this patch back and open up an issue, because nico said in issue below shouldn't happen
+    #  - issue would be in OAK, regarding the 'cooked' error
     # Patch missing roots / etc issue (until resolved: https://github.com/ontodev/robot/issues/1082)
     # ! - Deactivated this because I was getting an error about the very same IDs that Chris R was asking for
     #     Try uploading and see if it works.
@@ -239,10 +260,12 @@ def semsql_to_fhir(inpath: str, out_dir: str, out_filename: str = None, include_
 
 def owl_to_fhir(
     input_path_or_url: str, out_dir: str = OUTDIR, out_filename: str = None, include_all_predicates=False,
-    retain_intermediaries=False, intermediary_type=['obographs', 'semsql'][0], use_cached_intermediaries=False
+    retain_intermediaries=False, intermediary_type=['obographs', 'semsql'][0], use_cached_intermediaries=False,
+    intermediary_outdir: str = None, convert_intermediaries_only=False
 ) -> str:
     """Run conversion"""
-    # Download if necessary & determine outpath
+    # Download if necessary & determine outpaths
+    intermediary_outdir = intermediary_outdir if intermediary_outdir else out_dir
     input_path = input_path_or_url
     url = None
     maybe_url = urlparse(input_path_or_url)
@@ -266,16 +289,18 @@ def owl_to_fhir(
         intermediary_path = owl_to_obograph(input_path, use_cached_intermediaries)
         obograph_to_fhir(
             inpath=intermediary_path,
-            out_dir=out_dir,
+            out_dir=intermediary_outdir,
             out_filename=out_filename,
             include_all_predicates=include_all_predicates)
-    elif intermediary_type == 'semsql':
+    else:  # semsql
         intermediary_path = owl_to_semsql(input_path, use_cached_intermediaries)
         semsql_to_fhir(
             inpath=intermediary_path,
-            out_dir=out_dir,
+            out_dir=intermediary_outdir,
             out_filename=out_filename,
             include_all_predicates=include_all_predicates)
+    if convert_intermediaries_only:
+        return intermediary_path
 
     # Cleanup
     indir = os.path.dirname(input_path)
@@ -292,11 +317,43 @@ def owl_to_fhir(
     return os.path.join(out_dir, out_filename)
 
 
+def _run_favorites(
+    use_cached_intermediaries=FAVORITE_DEFAULTS['use_cached_intermediaries'],
+    retain_intermediaries=FAVORITE_DEFAULTS['retain_intermediaries'],
+    include_all_predicates=FAVORITE_DEFAULTS['include_all_predicates'],
+    intermediary_type=FAVORITE_DEFAULTS['intermediary_type'], out_dir=FAVORITE_DEFAULTS['out_dir'],
+    intermediary_outdir=FAVORITE_DEFAULTS['intermediary_outdir'],
+    convert_intermediaries_only=FAVORITE_DEFAULTS['convert_intermediaries_only'], favorites: Dict = FAVORITE_ONTOLOGIES
+):
+    """Convert favorite ontologies"""
+    fails = []
+    successes = []
+    n = len(favorites)
+    i = 0
+    for d in favorites.values():
+        print('Converting {} of {}: {}'.format(i, n, d['id']))
+        try:
+            owl_to_fhir(
+                out_filename=f'CodeSystem-{d["id"]}.json',
+                input_path_or_url=d['input_path'] if d['input_path'] else d['url'],
+                use_cached_intermediaries=use_cached_intermediaries, retain_intermediaries=retain_intermediaries,
+                include_all_predicates=include_all_predicates, intermediary_type=intermediary_type,
+                intermediary_outdir=intermediary_outdir, out_dir=out_dir,
+                convert_intermediaries_only=convert_intermediaries_only)
+            successes.append(d['id'])
+        except Exception as e:
+            fails.append(d['id'])
+            print('Failed to convert {}: \n{}'.format(d['id'], e))
+    print('SUMMARY')
+    print('Successes: ' + str(successes))
+    print('Failures: ' + str(fails))
+
+
 def cli():
     """Command line interface."""
     package_description = 'Convert OWL to FHIR.'
     parser = ArgumentParser(description=package_description)
-    parser.add_argument('-i', '--input-path-or-url', required=True, help='URL or path to OWL file to convert.')
+    parser.add_argument('-i', '--input-path-or-url', required=False, help='URL or path to OWL file to convert.')
     parser.add_argument(
         '-o', '--out-dir', required=False, default=OUTDIR, help='The directory where results should be saved.')
     parser.add_argument(
@@ -314,9 +371,18 @@ def cli():
     parser.add_argument(
         '-r', '--retain-intermediaries', action='store_true', default=False, required=False,
         help='Retain intermediary files created during conversion process (e.g. Obograph JSON)?')
+    parser.add_argument(
+        '-I', '--convert-intermediaries-only', action='store_true', default=False, required=False,
+        help='Convert intermediaries only?')
+    parser.add_argument(
+        '-f', '--favorites', action='store_true', default=False, required=False,
+        help='If present, will run all favorite ontologies found in `FAVORITE_ONTOLOGIES`. If using this option, the '
+             'other CLI flags are not relevant. Instead, edit the following config: `FAVORITE_DEFAULTS`.')
 
-    kwargs_dict: Dict = vars(parser.parse_args())
-    owl_to_fhir(**kwargs_dict)
+    d: Dict = vars(parser.parse_args())
+    if d['favorites']:
+        _run_favorites(**{**FAVORITE_DEFAULTS, **{'favorites': FAVORITE_ONTOLOGIES}})
+    owl_to_fhir(**d)
 
 
 # Execution
