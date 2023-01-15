@@ -1,5 +1,4 @@
 """Convert OWL to FHIR"""
-import json
 import os
 import subprocess
 from argparse import ArgumentParser
@@ -318,14 +317,12 @@ def owl_to_fhir(
 
 
 def _run_favorites(
-    use_cached_intermediaries=FAVORITE_DEFAULTS['use_cached_intermediaries'],
-    retain_intermediaries=FAVORITE_DEFAULTS['retain_intermediaries'],
-    include_all_predicates=FAVORITE_DEFAULTS['include_all_predicates'],
-    intermediary_type=FAVORITE_DEFAULTS['intermediary_type'], out_dir=FAVORITE_DEFAULTS['out_dir'],
-    intermediary_outdir=FAVORITE_DEFAULTS['intermediary_outdir'],
-    convert_intermediaries_only=FAVORITE_DEFAULTS['convert_intermediaries_only'], favorites: Dict = FAVORITE_ONTOLOGIES
+    use_cached_intermediaries: bool = None, retain_intermediaries: bool = None, include_all_predicates: bool = None,
+    intermediary_type: str = None, out_dir: str = None, intermediary_outdir: str = None,
+    convert_intermediaries_only: bool = None, favorites: Dict = FAVORITE_ONTOLOGIES
 ):
     """Convert favorite ontologies"""
+    kwargs = {k: v for k, v in locals().items() if v is not None and not k.startswith('__') and k != 'favorites'}
     fails = []
     successes = []
     n = len(favorites)
@@ -335,11 +332,7 @@ def _run_favorites(
         try:
             owl_to_fhir(
                 out_filename=f'CodeSystem-{d["id"]}.json',
-                input_path_or_url=d['input_path'] if d['input_path'] else d['url'],
-                use_cached_intermediaries=use_cached_intermediaries, retain_intermediaries=retain_intermediaries,
-                include_all_predicates=include_all_predicates, intermediary_type=intermediary_type,
-                intermediary_outdir=intermediary_outdir, out_dir=out_dir,
-                convert_intermediaries_only=convert_intermediaries_only)
+                input_path_or_url=d['input_path'] if d['input_path'] else d['url'], **kwargs)
             successes.append(d['id'])
         except Exception as e:
             fails.append(d['id'])
@@ -382,6 +375,7 @@ def cli():
     d: Dict = vars(parser.parse_args())
     if d['favorites']:
         _run_favorites(**{**FAVORITE_DEFAULTS, **{'favorites': FAVORITE_ONTOLOGIES}})
+    del d['favorites']
     owl_to_fhir(**d)
 
 
